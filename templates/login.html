@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <title>Login - Ads Auditor</title>
+</head>
+<body class="bg-[#0b0f1a] text-slate-200 h-screen flex items-center justify-center p-4">
+    <div class="max-w-md w-full bg-[#161b2c] p-8 rounded-3xl border border-slate-800 shadow-2xl">
+        <h1 class="text-2xl font-black text-blue-500 italic uppercase mb-2 text-center">Acessar Painel</h1>
+        <p class="text-slate-500 text-[10px] text-center mb-8 uppercase tracking-[0.2em]">Bem-vindo de volta, gestor</p>
+
+        {% if erro %}
+        <div class="bg-rose-500/10 border border-rose-500/30 text-rose-500 text-[11px] p-3 rounded-xl mb-6 text-center font-bold">
+            {{ erro }}
+        </div>
+        {% endif %}
+
+        <form method="POST" action="/login" class="space-y-4">
+            <div>
+                <label class="text-[10px] text-slate-500 font-bold uppercase mb-1 block tracking-widest">Usuário</label>
+                <input name="usuario" type="text" required placeholder="Digite seu usuário" 
+                       class="w-full bg-[#1e253a] p-4 rounded-xl border border-slate-700 focus:border-blue-500 outline-none transition-all placeholder:text-slate-600">
+            </div>
+            <div>
+                <label class="text-[10px] text-slate-500 font-bold uppercase mb-1 block tracking-widest">Senha</label>
+                <input name="senha" type="password" required placeholder="Digite sua senha" 
+                       class="w-full bg-[#1e253a] p-4 rounded-xl border border-slate-700 focus:border-blue-500 outline-none transition-all placeholder:text-slate-600">
+            </div>
+            <button type="submit" class="w-full bg-blue-600 hover:bg-blue-500 py-4 rounded-xl font-bold uppercase tracking-widest transition-all shadow-lg shadow-blue-900/40">
+                Fazer Login
+            </button>
+        </form>
+
+        <p class="text-center text-slate-500 text-[10px] mt-8 uppercase tracking-widest">
+    Acesso restrito a clientes ativos.<br>
+    <span class="text-blue-500 font-bold">Suporte: (seu-contato)</span>
+</p>
+    </div>
+</body>
+</html>

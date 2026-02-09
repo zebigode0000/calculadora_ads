@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <title>Ativar Acesso - Ads Auditor</title>
+</head>
+<body class="bg-[#0b0f1a] text-slate-200 h-screen flex items-center justify-center p-4">
+    <div class="max-w-md w-full bg-[#161b2c] p-8 rounded-3xl border border-slate-800 shadow-2xl text-center">
+        <div class="mb-6">
+            <span class="bg-blue-600/20 text-blue-400 text-[10px] font-black px-3 py-1 rounded-full uppercase tracking-widest">Ativação de Licença</span>
+        </div>
+        <h1 class="text-2xl font-black text-white italic uppercase mb-8">Configure seu Acesso</h1>
+
+        {% if erro %}
+        <div class="bg-rose-500/10 border border-rose-500/30 text-rose-500 text-xs p-3 rounded-xl mb-6 font-bold">{{ erro }}</div>
+        {% endif %}
+
+        <form method="POST" class="space-y-4 text-left">
+            <div>
+                <label class="text-[10px] text-slate-500 font-bold uppercase mb-1 block tracking-widest">Chave de Convite</label>
+                <input name="chave" type="text" required placeholder="Cole sua chave aqui (ex: VIP-123)" 
+                       class="w-full bg-[#0b0f1a] p-4 rounded-xl border border-blue-900/30 focus:border-blue-500 outline-none text-blue-400 font-mono">
+            </div>
+            <hr class="border-slate-800 my-4">
+            <div>
+                <label class="text-[10px] text-slate-500 font-bold uppercase mb-1 block tracking-widest">Escolha seu Usuário</label>
+                <input name="usuario" type="text" required placeholder="Como quer ser chamado?" 
+                       class="w-full bg-[#1e253a] p-4 rounded-xl border border-slate-700 focus:border-blue-500 outline-none">
+            </div>
+            <div>
+                <label class="text-[10px] text-slate-500 font-bold uppercase mb-1 block tracking-widest">Defina sua Senha</label>
+                <input name="senha" type="password" required placeholder="Crie uma senha forte" 
+                       class="w-full bg-[#1e253a] p-4 rounded-xl border border-slate-700 focus:border-blue-500 outline-none">
+            </div>
+            <button type="submit" class="w-full bg-blue-600 hover:bg-blue-500 py-4 rounded-xl font-bold uppercase tracking-widest transition-all">
+                Ativar Minha Conta
+            </button>
+        </form>
+    </div>
+</body>
+</html> 

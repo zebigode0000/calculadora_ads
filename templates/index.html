@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <title>Ads Auditor PRO - Dashboard</title>
+</head>
+<body class="bg-[#0b0f1a] text-slate-200 font-sans p-4 md:p-8">
+    <div class="max-w-6xl mx-auto">
+        
+        <div class="flex justify-between items-center mb-8">
+            <h1 class="text-2xl font-black text-blue-500 italic uppercase tracking-tighter">
+                Ads Auditor <span class="text-white not-italic text-sm font-light">Expert</span>
+            </h1>
+            <a href="/logout" class="text-[10px] bg-rose-500/10 text-rose-500 border border-rose-500/30 px-4 py-2 rounded-xl font-bold uppercase hover:bg-rose-500 hover:text-white transition">Sair do Sistema</a>
+        </div>
+
+        <div class="grid lg:grid-cols-12 gap-8">
+            
+            <form method="POST" class="lg:col-span-4 bg-[#161b2c] p-6 rounded-2xl border border-slate-800 shadow-2xl space-y-4">
+                <div class="flex items-center gap-2 mb-2">
+                    <div class="w-1.5 h-4 bg-blue-500 rounded-full"></div>
+                    <h2 class="text-xs font-bold text-slate-300 uppercase tracking-widest">Nova Auditoria</h2>
+                </div>
+
+                <div>
+                    <label class="text-[10px] text-blue-400 font-bold uppercase mb-1 block">Nome da Campanha (Para Agrupar)</label>
+                    <input name="nome_campanha" type="text" placeholder="Ex: CONJUNTO 01" required 
+                           class="w-full bg-[#1e253a] p-3 rounded-xl border border-slate-700 focus:border-blue-500 outline-none text-sm placeholder:text-slate-600">
+                </div>
+
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="text-[10px] text-slate-500 font-bold uppercase mb-1 block">Gasto Total (R$)</label>
+                        <input name="investimento" type="number" step="0.01" required placeholder="0.00" class="w-full bg-[#1e253a] p-3 rounded-xl border border-slate-700 outline-none text-sm">
+                    </div>
+                    <div>
+                        <label class="text-[10px] text-slate-500 font-bold uppercase mb-1 block">Dias Rodando</label>
+                        <input name="dias" type="number" required placeholder="1" class="w-full bg-[#1e253a] p-3 rounded-xl border border-slate-700 outline-none text-sm">
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="text-[10px] text-slate-500 font-bold uppercase mb-1 block">CPC Médio (R$)</label>
+                        <input name="cpc" type="number" step="0.01" placeholder="0.80" class="w-full bg-[#1e253a] p-3 rounded-xl border border-slate-700 outline-none text-sm">
+                    </div>
+                    <div>
+                        <label class="text-[10px] text-slate-500 font-bold uppercase mb-1 block">Total Cliques</label>
+                        <input name="cliques" type="number" placeholder="0" class="w-full bg-[#1e253a] p-3 rounded-xl border border-slate-700 outline-none text-sm">
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="text-[10px] text-slate-500 font-bold uppercase mb-1 block">Vendas</label>
+                        <input name="vendas" type="number" placeholder="0" class="w-full bg-[#1e253a] p-3 rounded-xl border border-slate-700 outline-none text-sm">
+                    </div>
+                    <div>
+                        <label class="text-[10px] text-slate-500 font-bold uppercase mb-1 block">Custo Prod (R$)</label>
+                        <input name="custo_produto" type="number" step="0.01" placeholder="0.00" class="w-full bg-[#1e253a] p-3 rounded-xl border border-slate-700 outline-none text-sm">
+                    </div>
+                </div>
+
+                <div>
+                    <label class="text-[10px] text-slate-500 font-bold uppercase mb-1 block">Preço de Venda (R$)</label>
+                    <input name="preco_venda" type="number" step="0.01" placeholder="197.00" class="w-full bg-[#1e253a] p-3 rounded-xl border border-slate-700 outline-none text-sm">
+                </div>
+
+                <button type="submit" class="w-full bg-blue-600 hover:bg-blue-500 py-4 rounded-xl font-bold uppercase tracking-wider transition-all shadow-lg shadow-blue-900/20 text-sm">
+                    Analisar Performance
+                </button>
+            </form>
+
+            <div class="lg:col-span-8 space-y-6">
+                
+                {% if r %}
+                <div class="grid grid-cols-3 gap-4">
+                    <div class="bg-[#161b2c] p-6 rounded-2xl border border-slate-800 text-center shadow-xl">
+                        <p class="text-[10px] text-slate-500 font-bold uppercase mb-2">Lucro Líquido</p>
+                        <p class="text-2xl font-black {{ r.status_cor }}">{{ r.lucro }}</p>
+                    </div>
+                    <div class="bg-[#161b2c] p-6 rounded-2xl border border-slate-800 text-center shadow-xl border-b-4 border-blue-500">
+                        <p class="text-[10px] text-slate-500 font-bold uppercase mb-2">ROAS</p>
+                        <p class="text-2xl font-black text-blue-400">{{ r.roas }}x</p>
+                    </div>
+                    <div class="bg-[#161b2c] p-6 rounded-2xl border border-slate-800 text-center shadow-xl">
+                        <p class="text-[10px] text-slate-500 font-bold uppercase mb-2">CTR Real</p>
+                        <p class="text-2xl font-black text-cyan-400">{{ r.ctr }}%</p>
+                    </div>
+                </div>
+
+                <div class="bg-[#161b2c] p-8 rounded-2xl border border-slate-800 shadow-2xl">
+                    <h3 class="text-lg font-bold mb-6 flex items-center gap-2 italic">📝 Veredito do Consultor</h3>
+                    <div class="space-y-3">
+                        {% for item in r.veredito %}
+                        <div class="bg-[#1e253a] p-4 rounded-xl border-l-4 {% if item.status == 'erro' %}border-rose-500{% elif item.status == 'alerta' %}border-yellow-500{% else %}border-blue-500{% endif %} text-sm">
+                            {{ item.msg }}
+                        </div>
+                        {% endfor %}
+                    </div>
+                    
+                    <div class="mt-8 pt-6 border-t border-slate-800">
+                        <h4 class="text-emerald-400 font-bold text-[10px] uppercase mb-4 tracking-[0.2em]">💡 Plano de Ação Estratégico</h4>
+                        <div class="grid md:grid-cols-2 gap-4">
+                            {% for acao in r.plano_acao %}
+                            <div class="bg-emerald-500/5 p-4 rounded-xl border border-emerald-500/10 text-xs text-emerald-100 flex items-start gap-3">
+                                <span class="bg-emerald-500/20 text-emerald-400 px-2 py-1 rounded text-[10px] font-bold">AÇÃO {{ loop.index }}</span>
+                                <p class="leading-relaxed">{{ acao }}</p>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
+
+                <div class="mt-10">
+                    <h3 class="text-sm font-bold text-slate-500 uppercase tracking-[0.3em] mb-6 flex items-center gap-2">
+                        <span class="w-4 h-[1px] bg-slate-800"></span> 
+                        Arquivo de Inteligência
+                    </h3>
+                    
+                    <div class="space-y-6">
+                        {% for nome, analises in historico.items() %}
+                            {% if analises is iterable and analises is not string %}
+                            <div class="bg-[#161b2c] rounded-2xl border border-slate-800 overflow-hidden shadow-2xl">
+                                <div class="bg-blue-600/5 px-6 py-3 border-b border-slate-800 flex justify-between items-center">
+                                    <span class="text-blue-400 font-black tracking-tighter uppercase text-xs italic">{{ nome }}</span>
+                                    <span class="text-[9px] text-slate-600 font-bold uppercase">{{ analises|length }} Entradas Salvas</span>
+                                </div>
+
+                                <div class="divide-y divide-slate-800/40 max-h-72 overflow-y-auto">
+                                    {% for analise in analises %}
+                                        {% if analise is mapping %}
+                                        <div class="p-4 hover:bg-slate-800/10 transition-all">
+                                            <div class="grid grid-cols-5 gap-2 items-center text-center">
+                                                <div class="text-left">
+                                                    <p class="text-[8px] text-slate-500 uppercase font-bold">Data/Hora</p>
+                                                    <p class="text-[11px] text-slate-400">{{ analise.data }}</p>
+                                                </div>
+                                                <div>
+                                                    <p class="text-[8px] text-slate-500 uppercase font-bold">ROAS</p>
+                                                    <p class="text-xs font-black text-blue-400">{{ analise.roas }}x</p>
+                                                </div>
+                                                <div>
+                                                    <p class="text-[8px] text-slate-500 uppercase font-bold">Lucro</p>
+                                                    <p class="text-xs font-black {% if analise.lucro > 0 %}text-emerald-400{% else %}text-rose-500{% endif %}">
+                                                        R${{ "%.2f"|format(analise.lucro) }}
+                                                    </p>
+                                                </div>
+                                                <div>
+                                                    <p class="text-[8px] text-slate-500 uppercase font-bold">CTR</p>
+                                                    <p class="text-xs text-white">{{ analise.ctr }}%</p>
+                                                </div>
+                                                <div class="flex justify-end">
+                                                     <span class="text-[9px] bg-slate-800 px-2 py-1 rounded text-slate-500 font-mono">v{{ loop.revindex }}</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        {% endif %}
+                                    {% endfor %}
+                                </div>
+                            </div>
+                            {% endif %}
+                        {% else %}
+                            <div class="text-center py-12 border-2 border-dashed border-slate-800 rounded-3xl">
+                                <p class="text-slate-600 text-sm italic">Nenhum dado monitorado até o momento.</p>
+                            </div>
+                        {% endfor %}
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+</body>
+</html>

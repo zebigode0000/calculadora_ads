@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <title>Cadastro - Ads Auditor</title>
+</head>
+<body class="bg-[#0b0f1a] text-slate-200 h-screen flex items-center justify-center p-4">
+    <div class="max-w-md w-full bg-[#161b2c] p-8 rounded-3xl border border-slate-800 shadow-2xl">
+        <h1 class="text-2xl font-black text-emerald-500 italic uppercase mb-2 text-center">Criar Conta</h1>
+        <p class="text-slate-500 text-[10px] text-center mb-8 uppercase tracking-[0.2em]">Comece a trackear seus resultados</p>
+
+        {% if erro %}
+        <div class="bg-rose-500/10 border border-rose-500/30 text-rose-500 text-[11px] p-3 rounded-xl mb-6 text-center font-bold">
+            {{ erro }}
+        </div>
+        {% endif %}
+
+        <form method="POST" action="/cadastro" class="space-y-4">
+            <div>
+                <label class="text-[10px] text-slate-500 font-bold uppercase mb-1 block tracking-widest">Novo Usuário</label>
+                <input name="usuario" type="text" required placeholder="Crie um usuário" 
+                       class="w-full bg-[#1e253a] p-4 rounded-xl border border-slate-700 focus:border-emerald-500 outline-none transition-all placeholder:text-slate-600">
+            </div>
+            <div>
+                <label class="text-[10px] text-slate-500 font-bold uppercase mb-1 block tracking-widest">Nova Senha</label>
+                <input name="senha" type="password" required placeholder="Crie uma senha" 
+                       class="w-full bg-[#1e253a] p-4 rounded-xl border border-slate-700 focus:border-emerald-500 outline-none transition-all placeholder:text-slate-600">
+            </div>
+            <button type="submit" class="w-full bg-emerald-600 hover:bg-emerald-500 py-4 rounded-xl font-bold uppercase tracking-widest transition-all shadow-lg shadow-emerald-900/40">
+                Finalizar Cadastro
+            </button>
+        </form>
+
+        <p class="text-center text-slate-500 text-xs mt-8">
+            Já possui acesso? <a href="/login" class="text-emerald-500 font-bold hover:underline">Voltar para Login</a>
+        </p>
+    </div>
+</body>
+</html>
