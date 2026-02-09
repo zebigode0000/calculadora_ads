@@ -5,212 +5,140 @@ from werkzeug.security import generate_password_hash, check_password_hash
 app = Flask(__name__)
 app.secret_key = 'macaco'
 
-# Configurações de pastas
 BASE_DIR = 'db_usuarios'
-if not os.path.exists(BASE_DIR):
-    os.makedirs(BASE_DIR)
+if not os.path.exists(BASE_DIR): os.makedirs(BASE_DIR)
+CHAVES_FILE = 'chaves.json'
 
-# --- FUNÇÕES DE BANCO DE DADOS POR USUÁRIO ---
-
-def get_user_path(username):
-    return os.path.join(BASE_DIR, f"{username.lower()}.json")
+# --- FUNÇÕES AUXILIARES ---
+def get_user_path(username): return os.path.join(BASE_DIR, f"{username.lower()}.json")
 
 def carregar_dados_usuario(username):
     path = get_user_path(username)
-    if not os.path.exists(path):
-        return {"senha": "", "historico": {}}
-    with open(path, 'r') as f:
-        return json.load(f)
+    if not os.path.exists(path): return {"senha": "", "historico": {}}
+    with open(path, 'r') as f: return json.load(f)
 
 def salvar_dados_usuario(username, dados):
-    path = get_user_path(username)
-    with open(path, 'w') as f:
-        json.dump(dados, f)
+    with open(get_user_path(username), 'w') as f: json.dump(dados, f)
 
-# --- LÓGICA DE ANÁLISE (A mesma que você já usa) ---
+def carregar_chaves():
+    if not os.path.exists(CHAVES_FILE): return []
+    with open(CHAVES_FILE, 'r') as f: return json.load(f)
 
-def gerar_analise_especialista(ctr, roas, lucro, cpa, vendas, dias, anterior=None):
-    # (Mantive a lógica anterior conforme seu pedido)
+def salvar_chaves(lista):
+    with open(CHAVES_FILE, 'w') as f: json.dump(lista, f)
+
+# --- NOVA LÓGICA DE INTELIGÊNCIA COM ANÁLISE DE FUNIL ---
+def gerar_analise_especialista(ctr, roas, lucro, cpa_real, cpa_ideal, break_even, cliques, checkouts, vendas):
     veredito = []
     plano_acao = []
     
-    if anterior:
-        diff = roas - anterior.get('roas', 0)
-        if diff > 0: veredito.append({"status": "sucesso", "msg": f"📈 Evolução: Seu ROAS subiu {diff:.2f}x."})
-        elif diff < 0: veredito.append({"status": "erro", "msg": f"📉 Queda: O ROAS caiu {abs(diff):.2f}x."})
-    
-    if lucro > 0: veredito.append({"status": "sucesso", "msg": "Operação lucrando."})
-    else: veredito.append({"status": "erro", "msg": "Operação no prejuízo."})
-    
-    if ctr < 1.0: veredito.append({"status": "erro", "msg": f"CTR Baixo ({ctr}%)."})
-    else: veredito.append({"status": "sucesso", "msg": f"CTR Forte ({ctr}%)."})
+    # 1. Análise de Lucratividade
+    if roas >= break_even:
+        veredito.append({"status": "sucesso", "msg": f"✅ Operação Segura: Seu ROAS ({roas}) está acima do break-even ({break_even:.2f})."})
+    else:
+        veredito.append({"status": "erro", "msg": f"🚨 Alerta de Prejuízo: ROAS abaixo do ponto de equilíbrio."})
 
-    if ctr < 1.2: plano_acao.append("🚀 Teste 3 novos ganchos de vídeo.")
-    else: plano_acao.append("💎 Escala Criativa: Duplique o melhor anúncio.")
-    
-    if roas < 2.5: plano_acao.append("🛒 Revise sua oferta ou dê um cupom.")
-    else: plano_acao.append("📈 Escala Vertical: Aumente orçamento em 15%.")
+    # 2. Análise de CPA
+    if cpa_real <= cpa_ideal:
+        veredito.append({"status": "sucesso", "msg": f"🎯 Meta de CPA: R${cpa_real:.2f} está dentro do limite."})
+        plano_acao.append("📈 ESCALA: Aumente o orçamento em 20% a cada 48h.")
+    else:
+        veredito.append({"status": "erro", "msg": f"💸 CPA Caro: R${cpa_real:.2f} (Meta era R${cpa_ideal:.2f})."})
+        plano_acao.append("🛑 PAUSAR/REVISAR: O custo por venda está alto demais.")
 
-    return veredito[:5], plano_acao[:2]
+    # 3. ANÁLISE DE FUNIL (Página vs Checkout)
+    taxa_checkout = (checkouts / cliques * 100) if cliques > 0 else 0
+    taxa_venda_final = (vendas / checkouts * 100) if checkouts > 0 else 0
 
-# --- ROTAS DE ACESSO ---
+    if cliques > 20:
+        if taxa_checkout < 7:
+            veredito.append({"status": "erro", "msg": f"📉 Falha na Página: Apenas {taxa_checkout:.1f}% iniciaram checkout. Sua página não está convencendo."})
+            plano_acao.append("🎨 Melhore o Header e o carregamento da página de vendas.")
+        else:
+            veredito.append({"status": "sucesso", "msg": f"💎 Página Forte: {taxa_checkout:.1f}% de conversão para checkout."})
 
-# --- ROTAS DE ACESSO (SUBSTITUA AS SUAS POR ESTAS) ---
-# Adicione isso ao seu app.py
+    if checkouts > 0:
+        if taxa_venda_final < 30:
+            veredito.append({"status": "alerta", "msg": f"🛒 Abandono de Carrinho: Apenas {taxa_venda_final:.1f}% dos checkouts viram venda. Verifique frete ou preço."})
+            plano_acao.append("📧 Ative/Otimize sua recuperação de carrinho e WhatsApp.")
 
-CHAVES_FILE = 'chaves.json'
+    return veredito, plano_acao
 
-def carregar_chaves():
-    if not os.path.exists(CHAVES_FILE):
-        return []
-    with open(CHAVES_FILE, 'r') as f:
-        return json.load(f)
-
-def salvar_chaves(lista):
-    with open(CHAVES_FILE, 'w') as f:
-        json.dump(lista, f)
-
+# --- ROTAS ---
 @app.route('/ativar', methods=['GET', 'POST'])
 def ativar():
     if request.method == 'POST':
-        chave_digitada = request.form.get('chave').strip()
-        user = (request.form.get('usuario') or '').strip().lower()
+        chave = request.form.get('chave', '').strip()
+        user = request.form.get('usuario', '').strip().lower()
         senha = request.form.get('senha')
-        
-        chaves_validas = carregar_chaves()
-        
-        if chave_digitada not in chaves_validas:
-            return render_template('ativar.html', erro="Chave de acesso inválida ou já utilizada!")
-        
-        if os.path.exists(get_user_path(user)):
-            return render_template('ativar.html', erro="Este usuário já existe!")
-
-        # 1. Cria o usuário
-        dados = {"senha": generate_password_hash(senha), "historico": {}}
-        salvar_dados_usuario(user, dados)
-        
-        # 2. "Queima" a chave para não ser usada de novo
-        chaves_validas.remove(chave_digitada)
-        salvar_chaves(chaves_validas)
-        
-        session['usuario'] = user
-        return redirect(url_for('index'))
-        
+        chaves = carregar_chaves()
+        if chave in chaves and user:
+            salvar_dados_usuario(user, {"senha": generate_password_hash(senha), "historico": {}})
+            chaves.remove(chave)
+            salvar_chaves(chaves)
+            session['usuario'] = user
+            return redirect(url_for('index'))
     return render_template('ativar.html')
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     if request.method == 'POST':
-        user = (request.form.get('usuario') or '').strip().lower()
+        user = request.form.get('usuario', '').strip().lower()
         senha = request.form.get('senha')
-        
-        if not user or not senha:
-            return render_template('login.html', erro="Preencha todos os campos!")
-
-        path = get_user_path(user)
-
-        # SE O USUÁRIO NÃO EXISTE
-        if not os.path.exists(path):
-            # CRIAMOS A CONTA AUTOMATICAMENTE PARA ELE NÃO DAR ERRO
-            dados = {
-                "senha": generate_password_hash(senha),
-                "historico": {}
-            }
-            salvar_dados_usuario(user, dados)
-            session['usuario'] = user
-            return redirect(url_for('index'))
-
-        # SE O USUÁRIO JÁ EXISTE, VERIFICA A SENHA
         dados = carregar_dados_usuario(user)
-        # Se por algum motivo o arquivo existir mas não tiver senha (erro de sistema)
-        if not dados.get("senha"):
-            dados["senha"] = generate_password_hash(senha)
-            salvar_dados_usuario(user, dados)
-
-        if check_password_hash(dados["senha"], senha):
+        if dados.get("senha") and check_password_hash(dados["senha"], senha):
             session['usuario'] = user
             return redirect(url_for('index'))
-        
-        return render_template('login.html', erro="Senha incorreta para este usuário!")
-        
-    return render_template('login.html')
+    return render_template('login.html', erro="Usuário ou senha incorretos")
 
-""" @app.route('/cadastro', methods=['GET', 'POST'])
- def cadastro():
-    if request.method == 'POST':
-        user = (request.form.get('usuario') or '').strip().lower()
-        senha = request.form.get('senha')
-        
-        if not user or not senha:
-            return render_template('cadastro.html', erro="Preencha todos os campos!")
-
-        if os.path.exists(get_user_path(user)):
-            return render_template('cadastro.html', erro="Este usuário já existe! Vá em Login.")
-        
-        # Cria e salva
-        dados = {"senha": generate_password_hash(senha), "historico": {}}
-        salvar_dados_usuario(user, dados)
-        
-        # JÁ LOGA O USUÁRIO DIRETO (Melhor experiência)
-        session['usuario'] = user
-        return redirect(url_for('index'))
-        
-    return render_template('cadastro.html')
-"""
 @app.route('/', methods=['GET', 'POST'])
 def index():
     if 'usuario' not in session: return redirect(url_for('login'))
-    
     user_data = carregar_dados_usuario(session['usuario'])
-    historico = user_data['historico']
     r = None
     
     if request.method == 'POST':
-        nome_camp = request.form.get('nome_campanha', 'GERAL').strip().upper()
         inv = float(request.form.get('investimento') or 0)
-        cpc = float(request.form.get('cpc') or 1)
         cliques = int(request.form.get('cliques') or 0)
+        checkouts = int(request.form.get('checkouts') or 0)
         vendas = int(request.form.get('vendas') or 0)
         preco_venda = float(request.form.get('preco_venda') or 0)
+        cpa_ideal = float(request.form.get('cpa_ideal') or 0)
         custo_prod = float(request.form.get('custo_produto') or 0)
-        dias = int(request.form.get('dias') or 1)
         
+        # Cálculos avançados
         faturamento = vendas * preco_venda
-        lucro_valor = faturamento - (inv + (vendas * custo_prod) + (faturamento * 0.05))
         roas = faturamento / inv if inv > 0 else 0
-        ctr = (cliques / (inv / cpc)) * 100 if inv > 0 else 0
+        lucro_liquido = faturamento - (inv + (vendas * custo_prod) + (faturamento * 0.06))
+        cpa_real = inv / vendas if vendas > 0 else inv
+        ctr = (cliques / (cliques * 10)) * 100 if cliques > 0 else 0 # Simulação de impressões
         
-        # Busca anterior apenas no histórico DESTE usuário
-        lista_analises = historico.get(nome_camp, [])
-        anterior = lista_analises[0] if lista_analises else None
+        margem = (preco_venda - custo_prod) / preco_venda if preco_venda > 0 else 0
+        break_even = 1 / margem if margem > 0 else 0
         
-        v, p = gerar_analise_especialista(round(ctr, 2), round(roas, 2), lucro_valor, 0, vendas, dias, anterior)
+        v, p = gerar_analise_especialista(round(ctr, 2), round(roas, 2), lucro_liquido, 
+                                         cpa_real, cpa_ideal, break_even, 
+                                         cliques, checkouts, vendas)
 
         r = {
-            "nome": nome_camp, "lucro": f"R$ {lucro_valor:,.2f}", "roas": round(roas, 2), "ctr": round(ctr, 2),
-            "status_cor": "text-emerald-400" if lucro_valor > 0 else "text-rose-500",
-            "veredito": v, "plano_acao": p
+            "lucro": f"R$ {lucro_liquido:,.2f}", 
+            "roas": round(roas, 2), 
+            "cpa": round(cpa_real, 2),
+            "break_even": round(break_even, 2),
+            "taxa_checkout": (checkouts/cliques*100) if cliques > 0 else 0,
+            "taxa_venda": (vendas/checkouts*100) if checkouts > 0 else 0,
+            "veredito": v, "plano_acao": p,
+            "cor_lucro": "text-emerald-400" if lucro_liquido > 0 else "text-rose-500"
         }
         
-        # Salva no histórico do usuário
-        nova_analise = {
-            "roas": round(roas, 2), "lucro": lucro_valor, "ctr": round(ctr, 2), 
-            "vendas": vendas, "data": datetime.datetime.now().strftime("%d/%m %H:%M")
-        }
-        
-        if nome_camp not in historico: historico[nome_camp] = []
-        historico[nome_camp].insert(0, nova_analise)
-        user_data['historico'] = historico
+        nova = {"data": datetime.datetime.now().strftime("%d/%m"), "roas": round(roas, 2), "lucro": lucro_liquido}
+        hist = user_data.get('historico', {})
+        if 'GERAL' not in hist: hist['GERAL'] = []
+        hist['GERAL'].insert(0, nova)
+        user_data['historico'] = hist
         salvar_dados_usuario(session['usuario'], user_data)
 
-    return render_template('index.html', r=r, historico=historico, usuario=session['usuario'])
+    return render_template('index.html', r=r, historico=user_data.get('historico', {}), usuario=session['usuario'])
 
-@app.route('/logout')
-def logout():
-    session.clear()
-    return redirect(url_for('login'))
-
-# Em vez de app.run(debug=True), use:
-app = app # Isso ajuda o Vercel a encontrar a instância
 if __name__ == '__main__':
     app.run()
