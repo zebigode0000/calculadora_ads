@@ -97,7 +97,7 @@ def ativar():
         return redirect(url_for('index'))
         
     return render_template('ativar.html')
-    
+
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     if request.method == 'POST':
@@ -210,5 +210,7 @@ def logout():
     session.clear()
     return redirect(url_for('login'))
 
+# Em vez de app.run(debug=True), use:
+app = app # Isso ajuda o Vercel a encontrar a instância
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run()
